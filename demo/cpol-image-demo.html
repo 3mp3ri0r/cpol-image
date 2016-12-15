@@ -1,0 +1,86 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../../paper-card/paper-card.html">
+<link rel="import" href="../../paper-input/paper-input.html">
+
+<link rel="import" href="../cpol-image.html">
+
+<dom-module id="cpol-image-demo">
+  <template>
+    <style>
+      :host {
+        display: block;
+        max-width: 500px;
+        margin: auto;
+      }
+      paper-button {
+        margin: 10px;
+        background: lightgreen;
+        color: black;
+      }
+      paper-card {
+        width: 500px;
+        box-shadow: none;
+        overflow-x: scroll;
+        white-space: nowrap;
+      }
+    </style>
+    <h4>Demo use of cpol-image</h4>
+    <paper-card elevation="1" animated-shadow="false">
+      <div class="card-content">
+        <cpol-image id="cimage" output-data='{{result}}' loading={{loading}} output-type='[[ot]]' scale='[[sc]]' max-width='[[mw]]' max-height='[[mh]]' image-quality='[[iq]]' this-error='{{error}}'></cpol-image>
+        <img src$='[[_computeBlob(result)]]'>
+        <div>
+          <input id="ifile" type="file">
+        </div>
+        <paper-button raised on-tap='_exe'>Process</paper-button>
+        <div>Loading: [[loading]]</div>
+        <div>Error code: [[error.code]]</div>
+        <div>Error message: [[error.message]]</div>
+        <paper-input type='text' label="Output type" value='{{ot}}'></paper-input>
+        <paper-input type='number' label="Scale" value='{{sc}}'></paper-input>
+        <paper-input type='number' label="Max width" value='{{mw}}'></paper-input>
+        <paper-input type='number' label="Max height" value='{{mh}}'></paper-input>
+        <paper-input type='number' label="Image quality" value='{{iq}}'></paper-input>
+      </div>
+    </paper-card>
+  </template>
+  <script>
+    Polymer({
+      is: 'cpol-image-demo',
+      properties: {
+        ot: {
+          type: String,
+          value: 'blob',
+        },
+        sc: {
+          type: Number,
+          value: 0.5
+        },
+        mw: {
+          type: Number,
+          value: 0
+        },
+        mh: {
+          type: Number,
+          value: 0
+        },
+        iq: {
+          type: Number,
+          value: 1
+        },
+      },
+
+      _exe: function() {
+        this.$.cimage.processImageFile(this.$.ifile.files);
+      },
+
+      _computeBlob(blob) {
+        if (blob) {
+          var URL = window.URL || window.webkitURL;
+          return URL.createObjectURL(blob);
+        }
+      }
+    });
+  </script>
+</dom-module>

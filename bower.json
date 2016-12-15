@@ -1,0 +1,35 @@
+{
+  "name": "cpol-image",
+  "version": "1.0.0",
+  "homepage": "https://github.com/3mp3ri0r/cpol-image",
+  "description": "<cpol-image> is a polymer image resize. It's usefull when you want to upload thumbnail to firebase or other backend.",
+  "main": "cpol-image.html",
+  "authors": [
+    "Christoforus Surjoputro <cs_sanmar@yahoo.com> (https://github.com/3mp3ri0r)"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "keywords": [
+    "polymer",
+    "image",
+    "polymer-image-resize",
+    "image-resize",
+    "firebase-image-resize"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.1.7",
+    "paper-button": "PolymerElements/paper-button#^1.0.14",
+    "paper-card": "PolymerElements/paper-card#^1.1.4",
+    "paper-input": "PolymerElements/paper-input#^1.1.22"
+  },
+  "private": false
+}

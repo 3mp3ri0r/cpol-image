@@ -1,0 +1,247 @@
+<!--
+`<cpol-image>` is a polymer image resizer. It convert input file to resized blob or base64 type image. It's usefull when you want to upload thumbnail to firebase or other backend.
+
+### How to install:
+
+    bower install --save cpol-image
+
+### Simple example to use &lt;cpol-image&gt;:
+
+    <template>
+      <style>
+        :host {
+          display: block;
+        };
+      </style>
+      ...
+      <input id="ifile" type="file">
+      <cpol-image output-data='{{result}}'></cpol-image>
+      <paper-button on-tap='_exe'>Process</paper-button>
+      <img src$='[[_computeBlob(hasil)]]'>
+      ...
+    </template>
+    <script>
+      Polymer({
+        ...
+        _exe: function() {
+          this.$.coba.processImageFile(this.$.ifile.files);
+        },
+        ...
+      });
+    </script>
+
+
+### Set scale or width and/or height as you want.
+#### Scale become the highest priority to be executed.
+
+#### You can set scale number to be executed
+
+    <cpol-image output-data='{{result}}' scale='0.5'></cpol-image>
+
+
+#### You can set maxWidth and/or maxHeight to be executed
+
+    <cpol-image output-data='{{result}}' max-width='1024'></cpol-image>
+    <cpol-image output-data='{{result}}' max-height='768'></cpol-image>
+    <cpol-image output-data='{{result}}' max-width='1024' max-height='400'></cpol-image>
+
+
+### You can change output type between 'blob' and 'base64'.
+Don't forget to handle both type carefully or you got an error.
+
+    <cpol-image output-data='{{result}}' output-type='base64' scale='0.5'></cpol-image>
+
+
+@demo demo/index.html
+
+-->
+
+<dom-module id='cpol-image'>
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    
+  </template>
+  <script>
+    Polymer({
+      is: 'cpol-image',
+      properties: {
+
+        /** Maximum width of image target. */
+        maxWidth: {
+          type: Number,
+          value: 0
+        },
+
+        /** Maximum height of image target. */
+        maxHeight: {
+          type: Number,
+          value: 0
+        },
+
+        /** A Number between 0 and 1 indicating scale percentage of image target. */
+        scale: {
+          type: Number,
+          value: 0
+        },
+
+        /** A Number between 0 and 1 indicating image quality if the requested type is image/jpeg or image/webp. If this argument is anything else, the default value for image quality is used. Other arguments are ignored. */
+        imageQuality: {
+          type: Number,
+          value: 0.92
+        },
+
+        /** Set output image in blob or base64. */
+        outputType: {
+          type: String,
+          value: 'blob'
+        },
+
+        /** Get your resized image here. */
+        outputData: {
+          type: String,
+          value: '',
+          notify: true
+        },
+
+        /** True when resize is in progress. */
+        loading: {
+          type: Boolean,
+          value: false,
+          notify: true
+        },
+
+        /** It will tell you when error occured. */
+        thisError: {
+          type: Object,
+          value: function(){
+            return {};
+          },
+          notify: true
+        },
+      },
+
+      /**
+       * Process the image file with the given value.
+       * @param {Object} file An input file
+       */
+      processImageFile: function(file) {
+        console.log(typeof file)
+        if (!file || !file[0]) {
+          this.set('thisError.code', '100');
+          this.set('thisError.message', 'Not a file');
+          return;
+        }
+        if (!file[0].type.match('image.*')) {
+          this.set('thisError.code', '101');
+          this.set('thisError.message', 'Not an image file');
+          return;
+        }
+        if (!file[0].size > 0) {
+          this.set('thisError.code', '102');
+          this.set('thisError.message', 'This file has no content');
+          return;
+        }
+        if (isNaN(this.maxWidth) && isNaN(this.maxHeight) && isNaN(this.scale) && isNaN(this.imageQuality)) {
+          this.set('thisError.code', '103');
+          this.set('thisError.message', 'maxWidth, maxHeight, scale, and imageQuality must contain only number.');
+        }
+        if (!this.outputType.match('blob|base64')) {
+          this.set('thisError.code', '104');
+          this.set('thisError.message', 'Output type not supported');
+        }
+
+        this.loading = true;
+
+        var node = this;
+
+        var img = new Image;
+        img.onload = function() {
+          if (!URL){
+            delete this.src;
+            delete reader;
+          } else {
+            URL.revokeObjectURL(this.src);
+          }
+          var c = document.createElement('canvas');
+          var width = img.width;
+          var height = img.height;
+          var nodeWidth = 0;
+
+          if (node.maxWidth === 0 && node.maxHeight === 0) {
+            var nodeWidth = 64;
+            var nodeHeight = 64;
+          } else {
+            var nodeWidth = node.maxWidth;
+            var nodeHeight = node.maxHeight;
+          }
+
+          if (node.scale > 0) {
+            width = width * node.scale;
+            height = height * node.scale;
+          } else if (nodeWidth > 0 && nodeHeight > 0) {
+            width = nodeWidth;
+            height = nodeHeight;
+          } else if (nodeWidth > 0) {
+            height *= nodeWidth / width;
+            width = nodeWidth;
+          } else if (nodeHeight > 0) {
+            width *= nodeHeight / height;
+            height = nodeHeight;
+          }
+
+          c.width = width;
+          c.height = height;
+          var cCtx = c.getContext('2d');
+          cCtx.drawImage(img, 0, 0, width, height);
+
+          if (node.outputType === 'blob') {
+            node.supportBlob = 'iya';
+            if (!HTMLCanvasElement.prototype.toBlob) {
+              Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+                value: function (callback, type, quality) {
+
+                  var binStr = atob( this.toDataURL(type, quality).split(',')[1] ),
+                      len = binStr.length,
+                      arr = new Uint8Array(len);
+
+                  for (var i=0; i<len; i++ ) {
+                   arr[i] = binStr.charCodeAt(i);
+                  }
+
+                  callback( new Blob( [arr], {type: type || 'image/png'} ) );
+                }
+              });
+            }
+            c.toBlob(function(blob) {
+              node.outputData = blob;
+            }, file[0].type, Number(node.imageQuality));
+          } else if (node.outputType === 'base64') {
+            node.outputData = c.toDataURL(file[0].type, Number(node.imageQuality));
+          }
+          node.loading = false;
+        };
+
+        var URL = window.URL || window.webkitURL;
+        if (!URL) {
+          var reader = new FileReader();
+          reader.onload = function(result) {
+            img.src = result.target.result;
+          };
+
+          reader.error = function(error) {
+            node.set('thisError.code', error.target.error.code);
+            node.set('thisError.message', error.target.error.message);
+          };
+
+          reader.readAsDataURL(file[0]);
+        } else {
+          img.src = URL.createObjectURL(file[0]);
+        }
+      },
+    });
+  </script>
+</dom-module>
