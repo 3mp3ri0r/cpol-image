@@ -1,3 +1,5 @@
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://beta.webcomponents.org/element/3mp3ri0r/cpol-image)
+
 `<cpol-image>` is a polymer image resizer. It convert input file to resized blob or base64 type image. It's usefull when you want to upload thumbnail to firebase or other backend.
 
 ### How to install:
